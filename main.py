@@ -41,7 +41,7 @@ ai_channels: dict[int, set] = {}
 #         دوال مساعدة
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-def get_ai_response(user_id: int, user_message: str) -> str:
+async def get_ai_response(user_id: int, user_message: str) -> str:
     """يحصل على رد من Claude AI مع سجل المحادثة"""
     if user_id not in conversation_history:
         conversation_history[user_id] = []
@@ -52,16 +52,19 @@ def get_ai_response(user_id: int, user_message: str) -> str:
         "content": user_message
     })
     
-    # نحافظ على آخر 10 رسائل فقط
+    # نحافظ على آخر 20 رسالة فقط
     if len(conversation_history[user_id]) > 20:
         conversation_history[user_id] = conversation_history[user_id][-20:]
     
-    response = client_ai.messages.create(
+    # نشغّل الـ API في thread منفصل عشان ما يبلوك الـ event loop
+    loop = asyncio.get_event_loop()
+    messages_snapshot = list(conversation_history[user_id])
+    response = await loop.run_in_executor(None, lambda: client_ai.messages.create(
         model="claude-opus-4-5",
         max_tokens=1024,
         system=BOT_PERSONALITY,
-        messages=conversation_history[user_id]
-    )
+        messages=messages_snapshot
+    ))
     
     assistant_reply = response.content[0].text
     
@@ -120,7 +123,7 @@ async def on_message(message):
     # رد في قنوات AI على كل رسالة
     if guild_id and guild_id in ai_channels and channel_id in ai_channels[guild_id]:
         async with message.channel.typing():
-            response = get_ai_response(message.author.id, message.content)
+            response = await get_ai_response(message.author.id, message.content)
         await message.reply(response)
         await bot.process_commands(message)
         return
@@ -132,14 +135,14 @@ async def on_message(message):
             user_msg = "مرحبا، قدم نفسك"
         
         async with message.channel.typing():
-            response = get_ai_response(message.author.id, user_msg)
+            response = await get_ai_response(message.author.id, user_msg)
         
         await message.reply(response)
     
     # رسائل خاصة (DM)
     elif isinstance(message.channel, discord.DMChannel):
         async with message.channel.typing():
-            response = get_ai_response(message.author.id, message.content)
+            response = await get_ai_response(message.author.id, message.content)
         await message.channel.send(response)
     
     await bot.process_commands(message)
@@ -153,7 +156,7 @@ async def on_message(message):
 async def ask(interaction: discord.Interaction, question: str):
     await interaction.response.defer()
     
-    response = get_ai_response(interaction.user.id, question)
+    response = await get_ai_response(interaction.user.id, question)
     
     embed = discord.Embed(
         description=response,
@@ -182,7 +185,7 @@ async def roast(interaction: discord.Interaction, target: discord.Member = None)
     person = target.display_name if target else interaction.user.display_name
     prompt = f"اطقطق على شخص اسمه {person} بشكل مضحك وخفيف، جملتين بس"
     
-    response = get_ai_response(interaction.user.id, prompt)
+    response = await get_ai_response(interaction.user.id, prompt)
     await interaction.followup.send(f"🔥 {response}")
 
 @bot.tree.command(name="trivia", description="سؤال ثقافي عشوائي")
@@ -191,7 +194,7 @@ async def trivia(interaction: discord.Interaction, topic: str = "عام"):
     await interaction.response.defer()
     
     prompt = f"اعطني سؤال ثقافي عشوائي عن موضوع '{topic}' مع 4 خيارات (أ، ب، ج، د) والجواب الصح في الأخير. اكتبه بشكل جميل."
-    response = get_ai_response(interaction.user.id, prompt)
+    response = await get_ai_response(interaction.user.id, prompt)
     
     embed = discord.Embed(
         title="🧠 سؤال ثقافي",
@@ -206,7 +209,7 @@ async def story(interaction: discord.Interaction, theme: str = "مغامرة"):
     await interaction.response.defer()
     
     prompt = f"احكيلي قصة قصيرة ومشوقة عن موضوع: {theme}. ٣-٤ جمل بس."
-    response = get_ai_response(interaction.user.id, prompt)
+    response = await get_ai_response(interaction.user.id, prompt)
     
     embed = discord.Embed(
         title=f"📖 قصة: {theme}",
@@ -220,7 +223,7 @@ async def joke(interaction: discord.Interaction):
     await interaction.response.defer()
     
     prompt = "قلي نكتة مضحكة خفيفة"
-    response = get_ai_response(interaction.user.id, prompt)
+    response = await get_ai_response(interaction.user.id, prompt)
     await interaction.followup.send(f"😂 {response}")
 
 @bot.tree.command(name="add_ai_to_channel", description="فعّل Fttz AI في قناة معينة يرد على كل رسالة [للأدمن فقط]")
