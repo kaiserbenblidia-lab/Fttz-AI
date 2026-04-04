@@ -14,14 +14,9 @@ load_dotenv()
 
 DISCORD_TOKEN    = os.getenv("DISCORD_TOKEN")
 ANTHROPIC_KEY    = os.getenv("ANTHROPIC_API_KEY")
-AI_MODEL         = "claude-sonnet-4-20250514"
 MAX_HISTORY      = 20          # messages kept per channel
 BOT_COLOR        = 0x00FF88    # lime green — Fttz brand
 
-# ─────────────────────────────────────────
-#  AI Client
-# ─────────────────────────────────────────
-ai_client = anthropic.Anthropic(api_key=ANTHROPIC_KEY)
 
 # ─────────────────────────────────────────
 #  Conversation memory  {channel_id: [...]}
