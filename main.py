@@ -10,8 +10,8 @@ import os
 #         إعدادات البوت
 # ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
 
-DISCORD_TOKEN = "YOUR_DISCORD_TOKEN"
-ANTHROPIC_API_KEY = "YOUR_ANTHROPIC_API_KEY"
+DISCORD_TOKEN = os.environ.get("TOKEN")
+ANTHROPIC_API_KEY = os.environ.get("anthropic")
 
 # شخصية البوت
 BOT_PERSONALITY = """أنت مساعد ذكاء اصطناعي اسمك "Fttz AI" في سيرفر ديسكورد.
