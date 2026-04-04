@@ -1,29 +1,3 @@
-"""
-╔══════════════════════════════════════════════════════╗
-║           FTTZ AI Discord Bot                        ║
-║  Language-aware AI • Slash Commands • Room Manager  ║
-╚══════════════════════════════════════════════════════╝
-
-Requirements:
-  pip install discord.py anthropic python-dotenv
-
-Setup:
-  1. Create a .env file with:
-       DISCORD_TOKEN=your_discord_bot_token
-       ANTHROPIC_API_KEY=your_anthropic_api_key
-
-  2. Enable in Discord Developer Portal:
-       ✅ MESSAGE CONTENT INTENT
-       ✅ SERVER MEMBERS INTENT
-       ✅ GUILDS INTENT
-
-  3. Invite bot with scopes:
-       bot + applications.commands
-     Permissions:
-       Manage Channels, Send Messages, Read Messages,
-       Embed Links, Use Slash Commands
-"""
-
 import os
 import asyncio
 import anthropic
