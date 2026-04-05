@@ -5,8 +5,8 @@ import random
 import asyncio
 
 # ===================== CONFIG =====================
-BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"
-ANTHROPIC_API_KEY = "YOUR_ANTHROPIC_API_KEY_HERE"
+DISCORD_TOKEN = os.environ.get("TOKEN")
+ANTHROPIC_API_KEY = os.environ.get("anthropic")
 
 # ===================== SETUP =====================
 intents = discord.Intents.default()
